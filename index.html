@@ -29,16 +29,6 @@
   rel="stylesheet"
   href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@500;700&family=Bowlby+One&family=Cairo:wght@700;900&family=Fraunces:ital,opsz,wght@1,9..144,500&family=JetBrains+Mono:wght@500;700&display=swap"
 />
-<!-- Vercel Web Analytics -->
-<script>
-  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-</script>
-<script defer src="/_vercel/insights/script.js"></script>
-<!-- Vercel Speed Insights -->
-<script>
-  window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-</script>
-<script defer src="/_vercel/speed-insights/script.js"></script>
 <style>
   :root {
     --carbon: #000000;
@@ -2211,27 +2201,31 @@
     left: 50%;
     height: 94%;
     aspect-ratio: 402/874;
-    padding: 1.6%;
     border: 1px solid var(--carbon);
     border-radius: 15%/7%;
     background: var(--device);
   }
   .phone.a {
-    translate: -94% -50%;
-    rotate: -4deg;
+    translate: -102% -50%;
+    rotate: -3deg;
     z-index: 2;
   }
   .phone.b {
-    translate: -6% -47%;
-    rotate: 5deg;
+    translate: 2% -47%;
+    rotate: 4deg;
   }
   .phone-scr {
-    position: relative;
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    inset: 2.1% 4.6%;
     border-radius: 13.4%/6.2%;
     overflow: hidden;
     background: var(--bg, #fff);
+    container-type: size;
+  }
+  .phone-scr .shot {
+    left: 50%;
+    translate: -50% 0;
+    width: max(100%, 100cqh * var(--ar, 0.46));
   }
   .ph {
     position: absolute;
@@ -4972,7 +4966,10 @@
         box.dataset.i = i;
         box.dataset.src = src;
         box.dataset.key = key;
-        if (FX[key]) box.style.aspectRatio = FX[key].w + ' / ' + FX[key].h;
+        if (FX[key]) {
+          box.style.aspectRatio = FX[key].w + ' / ' + FX[key].h;
+          box.style.setProperty('--ar', (FX[key].w / FX[key].h).toFixed(4));
+        }
         const im = new Image();
         im.className = 'shot-img';
         im.alt = '';
@@ -4981,7 +4978,10 @@
         im.addEventListener(
           'load',
           () => {
-            if (!box.style.aspectRatio) box.style.aspectRatio = im.naturalWidth + ' / ' + im.naturalHeight;
+            if (!box.style.aspectRatio) {
+              box.style.aspectRatio = im.naturalWidth + ' / ' + im.naturalHeight;
+              box.style.setProperty('--ar', (im.naturalWidth / im.naturalHeight).toFixed(4));
+            }
             box.classList.add('is-loaded');
             card._onShotLoad && card._onShotLoad();
           },
@@ -6471,11 +6471,16 @@
     });
     motionHooks.push(() => players.forEach((pl) => pl.tl && pl.sync()));
     if (!reduce)
-      $$('.phone').forEach((p, i) =>
+      $$('.phone').forEach((p, i) => {
+        // GSAP folds the CSS translate into px once; hand it the % offsets instead so the float stays relative and survives resizes
+        const a = p.classList.contains('a');
+        p.style.translate = 'none';
+        p.style.rotate = 'none';
+        gsap.set(p, { x: 0, y: 0, xPercent: a ? -102 : 2, yPercent: a ? -50 : -47, rotation: a ? -3 : 4 });
         ambient.push(
           gsap.to(p, { y: i % 2 ? 10 : -10, duration: 2.6 + i * 0.2, ease: 'sine.inOut', yoyo: true, repeat: -1 }),
-        ),
-      );
+        );
+      });
     motionHooks.push((v) => ambient.forEach((t) => (v ? t.pause() : t.resume())));
     (() => {
       const pit = $('.pit');
