@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "portofolio-ten-lime-75.vercel.app" }],
+      "destination": "https://lotfy-portfolio.vercel.app/:path*",
+      "permanent": true
+    }
+  ]
+}
